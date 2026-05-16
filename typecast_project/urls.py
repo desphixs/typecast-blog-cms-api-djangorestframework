@@ -15,8 +15,16 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+
+# This is the "Master Switchboard" for the entire project.
+# It delegates specific sections of the website to different apps.
 
 urlpatterns = [
+    # The 'admin/' path gives us access to our data dashboard.
     path('admin/', admin.site.urls),
+    
+    # We include all the URLs from our 'blog' app and prefix them with 'api/'.
+    # This means our blog endpoints will start with http://127.0.0.1:8000/api/
+    path('api/', include('blog.urls')),
 ]
