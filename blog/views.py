@@ -36,3 +36,60 @@ class ArticleList(APIView):
         
         # 5. If the data is bad, send back the error messages and a "400 Bad Request" code.
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# 'ArticleDetail' is for looking at or modifying one specific blog post.
+# Think of this like taking a specific book off the library shelf to read it, 
+# fix a typo in it, or throw it away if it's outdated.
+class ArticleDetail(APIView):
+    
+    # Helper method to find an article by its ID (Primary Key).
+    # Analogy: A security check at the door—if the book isn't on the shelf, 
+    # we tell the user "Sorry, we don't have that here."
+    def get_object(self, pk):
+        try:
+            return Article.objects.get(pk=pk)
+        except Article.DoesNotExist:
+            return None
+
+    # The 'get' method is for FETCHING one specific article.
+    def get(self, request, pk):
+        article = self.get_object(pk)
+        if article is None:
+            # If the article doesn't exist, we send back a 404 error.
+            return Response({"error": "Article not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Translate the single article into JSON.
+        serializer = ArticleSerializer(article)
+        return Response(serializer.data)
+
+    # The 'put' method is for UPDATING an article.
+    # Analogy: Replacing an old manuscript with a new, corrected version.
+    def put(self, request, pk):
+        article = self.get_object(pk)
+        if article is None:
+            return Response({"error": "Article not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # We pass the EXISTING article AND the NEW data to the serializer.
+        serializer = ArticleSerializer(article, data=request.data)
+        
+        if serializer.is_valid():
+            # Save the updated information.
+            serializer.save()
+            return Response(serializer.data)
+        
+        # If the new data is bad (like a missing title), send back errors.
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    # The 'delete' method is for REMOVING an article forever.
+    # Analogy: Shredding a document. Remember: because of our CASCADE rule, 
+    # this will also shred every comment attached to this article!
+    def delete(self, request, pk):
+        article = self.get_object(pk)
+        if article is None:
+            return Response({"error": "Article not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Delete the article from our database.
+        article.delete()
+        # Return a "204 No Content" to say "Done! There's nothing left to show."
+        return Response(status=status.HTTP_204_NO_CONTENT)
