@@ -1,8 +1,8 @@
-# Build ZenTask: A Clean, Simple REST API for Managing Daily Tasks
+# Build TypeCast: A Blog Content API
 
 ### Project Description
 
-You are going to build a fully working task management API from scratch using Django and Django REST Framework. By the end, you will have a live backend that can accept HTTP requests to create a new task, list all tasks, update a task's details, mark it as complete, and delete it. You will do all of this without a single line of frontend code, just a clean, well-structured API that any client can consume. This is the exact same pat
+You are going to build TypeCast, a clean backend API that powers a modern blog. Think of it as the engine behind any blog you have ever read — Medium, Dev.to, a startup's company blog — all of them have a backend like this running quietly in the background. You will build the models for Articles and Comments, wire up serializers that bundle a comment list right inside each article response, and create dedicated API endpoints for reading, writing, and managing both. By the end of this project, you will understand how real content platforms are structured behind the scenes and you will have the skills to power one yourself.
 
 ## Tech Stack
 
