@@ -93,3 +93,48 @@ class ArticleDetail(APIView):
         article.delete()
         # Return a "204 No Content" to say "Done! There's nothing left to show."
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# 'CommentList' handles comments specifically tied to one article.
+# This is a "Nested Endpoint"—it means we are zooming in on one article 
+# and looking at its specific list of comments.
+class CommentList(APIView):
+
+    # The 'get' method returns all comments for a specific article.
+    # Analogy: Instead of looking at the whole library, we are opening ONE book 
+    # and reading just the feedback notes left on the back pages of that specific book.
+    def get(self, request, article_pk):
+        try:
+            # First, we must find the parent article.
+            article = Article.objects.get(pk=article_pk)
+        except Article.DoesNotExist:
+            # If the article doesn't exist, we can't show its comments!
+            return Response({"error": "Article not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # We grab all comments belonging to this specific article.
+        # This works because of 'related_name="comments"' we set in our models!
+        comments = article.comments.all()
+        # Translate the list of comments into JSON.
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data)
+
+    # The 'post' method adds a new comment to a specific article.
+    # Analogy: Writing a new feedback note and sticking it into a specific book.
+    def post(self, request, article_pk):
+        try:
+            # We must find the parent article to attach the comment to it.
+            article = Article.objects.get(pk=article_pk)
+        except Article.DoesNotExist:
+            return Response({"error": "Article not found"}, status=status.HTTP_404_NOT_FOUND)
+        
+        # Pass the user's data to the translator.
+        serializer = CommentSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            # This is the important part! We save the comment and manually 
+            # tell it which article it belongs to.
+            serializer.save(article=article)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        # If the comment data is bad, send back errors.
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
